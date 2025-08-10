@@ -1,0 +1,747 @@
+{% extends "layout.html" %}
+
+{% block title %}Doctors List{% endblock %}
+
+{% block content %}
+<style>
+    /* Main Styles */
+    body {
+        background: linear-gradient(135deg, #87CEEB, #4682B4);
+        color: white;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .container {
+        max-width: 1200px;
+    }
+    
+    /* Search Section */
+    .search-section {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .search-container {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    
+    .search-container input {
+        height: 50px;
+        border-radius: 25px;
+        padding-left: 50px;
+        padding-right: 50px;
+        font-size: 16px;
+        border: none;
+        color: black;
+        background: rgba(252, 252, 252, 0.9);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .search-container input:focus {
+        box-shadow: 0 5px 20px rgba(30, 144, 255, 0.3);
+        outline: none;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #1E90FF;
+        font-size: 18px;
+    }
+    
+    .clear-search {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        cursor: pointer;
+        font-size: 18px;
+        display: none;
+    }
+    
+    .filter-btn {
+        height: 50px;
+        border-radius: 25px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #1E90FF;
+        border: none;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .filter-btn:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Suggestions */
+    .suggestions {
+        position: absolute;
+        top: 55px;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+    }
+    
+    .suggestion-item {
+        padding: 10px 20px;
+        cursor: pointer;
+        color: #333;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .suggestion-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Filter Panel */
+    .filter-panel {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 15px;
+        display: none;
+    }
+    
+    .filter-title {
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: white;
+    }
+    
+    .filter-section {
+        margin-bottom: 20px;
+    }
+    
+    .range-value {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+        float: right;
+    }
+    
+    .form-check-input:checked {
+        background-color: #1E90FF;
+        border-color: #1E90FF;
+    }
+    
+    .form-label {
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Doctor Cards */
+    .doctor-card {
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 25px;
+        border: none;
+        background: linear-gradient(135deg, #00BFFF, #1E90FF);
+        color: white;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .doctor-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .doctor-info {
+        margin-bottom: 10px;
+    }
+    
+    .doctor-info i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+    }
+    
+    .book-btn {
+        background-color: #32CD32;
+        border: none;
+        font-weight: 600;
+        border-radius: 25px;
+        padding: 10px 20px;
+        transition: all 0.3s;
+        width: 100%;
+        margin-top: 15px;
+    }
+    
+    .book-btn:hover {
+        background-color: #228B22;
+        transform: scale(1.05);
+    }
+    
+    /* View Toggle */
+    .view-toggle {
+        margin-bottom: 20px;
+    }
+    
+    .view-toggle .btn {
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        font-weight: 500;
+    }
+    
+    .view-toggle .btn.active {
+        background: white;
+        color: #1E90FF;
+    }
+    
+    /* List View */
+    .doctor-list-item {
+        background: linear-gradient(135deg, #00BFFF, #1E90FF);
+        border-radius: 15px;
+        margin-bottom: 15px;
+        padding: 15px;
+        color: white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+    }
+    
+    .doctor-list-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* No Results */
+    .no-results {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        margin-top: 30px;
+        display: none;
+    }
+    
+    .reset-btn {
+        background: white;
+        color: #1E90FF;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .reset-btn:hover {
+        background: #f8f9fa;
+        transform: translateY(-2px);
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease forwards;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .filter-section {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <h2 class="text-center mb-4 font-weight-bold" style="color: white; text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);">
+        Available Doctors
+    </h2>
+    
+  
+    <div class="search-section">
+        <div class="row">
+            <div class="col-md-9 mb-3 mb-md-0">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search by name, specialization, experience...">
+                    <i class="fas fa-times clear-search" id="clearSearch"></i>
+                    <div class="suggestions" id="suggestions"></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button class="filter-btn" id="toggleFilters">
+                    <i class="fas fa-sliders-h me-2"></i> Filters <i class="fas fa-chevron-down ms-2" id="filterIcon"></i>
+                </button>
+            </div>
+        </div>
+        
+       
+        <div class="filter-panel" id="filterPanel">
+            <div class="row">
+                
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="filter-section">
+                        <h5 class="filter-title">Specialization</h5>
+                        <div id="specializationFilters">
+                           
+                        </div>
+                    </div>
+                </div>
+                
+              
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="filter-section">
+                        <h5 class="filter-title">Experience (years)</h5>
+                        <label for="experienceRange" class="form-label">
+                            Range: <span class="range-value" id="experienceValue">0 - 50</span>
+                        </label>
+                        <input type="range" class="form-range" min="0" max="50" value="50" id="experienceRange">
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h5 class="filter-title">Max Consultation Fee (₹)</h5>
+                        <label for="feeRange" class="form-label">
+                            Up to: <span class="range-value" id="feeValue">₹1000</span>
+                        </label>
+                        <input type="range" class="form-range" min="0" max="1000" step="10" value="1000" id="feeRange">
+                    </div>
+                </div>
+                
+                
+                <div class="col-md-4">
+                    <div class="filter-section">
+                        <h5 class="filter-title">Sort By</h5>
+                        <select class="form-select" id="sortSelect">
+                            <option value="default">Default</option>
+                            <option value="fee-low-high">Fee: Low to High</option>
+                            <option value="fee-high-low">Fee: High to Low</option>
+                            <option value="experience-high-low">Most Experienced</option>
+                            <option value="name-a-z">Name: A to Z</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn reset-btn w-100 mt-4" id="resetFilters">
+                        <i class="fas fa-undo me-2"></i> Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results Count and View Toggle -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="text-white" id="resultsCount">
+            Showing all doctors
+        </div>
+        
+        <div class="view-toggle btn-group" role="group">
+            <button type="button" class="btn active" id="gridViewBtn">
+                <i class="fas fa-th-large me-1"></i> Grid
+            </button>
+            <button type="button" class="btn" id="listViewBtn">
+                <i class="fas fa-list me-1"></i> List
+            </button>
+        </div>
+    </div>
+    
+   
+    <div class="row" id="doctorsGrid">
+        {% for doctor in doctors %}
+        <div class="col-lg-4 col-md-6 doctor-item" 
+             data-name="{{ doctor.user.first_name }} {{ doctor.user.last_name }}" 
+             data-specialization="{{ doctor.specialization }}" 
+             data-experience="{{ doctor.experience }}"
+             data-fee="{{ doctor.consultation_fee }}">
+            <div class="doctor-card">
+                <div class="card-body p-4 text-center">
+                    <h5 class="card-title font-weight-bold mb-3">Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</h5>
+                    
+                    <div class="doctor-info">
+                        <i class="fas fa-user-md"></i>
+                        <strong>Specialization:</strong> <span class="specialization">{{ doctor.specialization }}</span>
+                    </div>
+                    
+                    <div class="doctor-info">
+                        <i class="fas fa-briefcase"></i>
+                        <strong>Experience:</strong> <span class="experience">{{ doctor.experience }}</span> years
+                    </div>
+                    
+                    <div class="doctor-info">
+                        <i class="fas fa-dollar-sign"></i>
+                        <strong>Consultation Fee:</strong> ₹{{ doctor.consultation_fee }}
+                    </div>
+                    
+                    <a href="{% url 'book_appointment' doctor.user_id %}" class="btn btn-success book-btn">
+                        Book Appointment
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-center text-white">No doctors available.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+   
+    <div id="doctorsList" style="display: none;">
+        {% for doctor in doctors %}
+        <div class="doctor-item"
+             data-name="{{ doctor.user.first_name }} {{ doctor.user.last_name }}" 
+             data-specialization="{{ doctor.specialization }}" 
+             data-experience="{{ doctor.experience }}"
+             data-fee="{{ doctor.consultation_fee }}">
+            <div class="doctor-list-item">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-2">Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</h5>
+                        <div><strong>Specialization:</strong> <span class="specialization">{{ doctor.specialization }}</span></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div><strong>Experience:</strong> <span class="experience">{{ doctor.experience }}</span> years</div>
+                        <div><strong>Fee:</strong> ₹{{ doctor.consultation_fee }}</div>
+                    </div>
+                    <div class="col-md-2 mt-3 mt-md-0">
+                        <a href="{% url 'book_appointment' doctor.user_id %}" class="btn btn-success book-btn">
+                            Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    
+    <div class="no-results" id="noResults">
+        <h3 class="text-white mb-3">No doctors found</h3>
+        <p class="text-white mb-4">Try adjusting your search or filters to find more results.</p>
+        <button class="btn reset-btn" id="resetFiltersNoResults">
+            <i class="fas fa-undo me-2"></i> Reset All Filters
+        </button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+       
+        const searchInput = document.getElementById('searchInput');
+        const clearSearch = document.getElementById('clearSearch');
+        const suggestions = document.getElementById('suggestions');
+        const toggleFilters = document.getElementById('toggleFilters');
+        const filterPanel = document.getElementById('filterPanel');
+        const filterIcon = document.getElementById('filterIcon');
+        const experienceRange = document.getElementById('experienceRange');
+        const experienceValue = document.getElementById('experienceValue');
+        const feeRange = document.getElementById('feeRange');
+        const feeValue = document.getElementById('feeValue');
+        const sortSelect = document.getElementById('sortSelect');
+        const resetFilters = document.getElementById('resetFilters');
+        const resetFiltersNoResults = document.getElementById('resetFiltersNoResults');
+        const gridViewBtn = document.getElementById('gridViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const doctorsGrid = document.getElementById('doctorsGrid');
+        const doctorsList = document.getElementById('doctorsList');
+        const resultsCount = document.getElementById('resultsCount');
+        const noResults = document.getElementById('noResults');
+        const specializationFilters = document.getElementById('specializationFilters');
+        
+        // Get all doctor items
+        const doctorItems = document.querySelectorAll('.doctor-item');
+        
+        // Extract unique specializations
+        const specializations = new Set();
+        doctorItems.forEach(item => {
+            const spec = item.getAttribute('data-specialization');
+            if (spec) specializations.add(spec);
+        });
+        
+        
+        specializations.forEach(spec => {
+            const checkboxDiv = document.createElement('div');
+            checkboxDiv.className = 'form-check mb-2';
+            
+            const checkbox = document.createElement('input');
+            checkbox.className = 'form-check-input specialization-checkbox';
+            checkbox.type = 'checkbox';
+            checkbox.id = `spec-${spec.replace(/\s+/g, '-').toLowerCase()}`;
+            checkbox.value = spec;
+            
+            const label = document.createElement('label');
+            label.className = 'form-check-label';
+            label.htmlFor = checkbox.id;
+            label.textContent = spec;
+            
+            checkboxDiv.appendChild(checkbox);
+            checkboxDiv.appendChild(label);
+            specializationFilters.appendChild(checkboxDiv);
+        });
+        
+       
+        let selectedSpecializations = [];
+        let maxExperience = 50;
+        let maxFee = 1000;
+        let currentSort = 'default';
+        let currentView = 'grid';
+        
+     
+        toggleFilters.addEventListener('click', function() {
+            if (filterPanel.style.display === 'none' || !filterPanel.style.display) {
+                filterPanel.style.display = 'block';
+                filterIcon.classList.remove('fa-chevron-down');
+                filterIcon.classList.add('fa-chevron-up');
+            } else {
+                filterPanel.style.display = 'none';
+                filterIcon.classList.remove('fa-chevron-up');
+                filterIcon.classList.add('fa-chevron-down');
+            }
+        });
+        
+       
+        searchInput.addEventListener('input', function() {
+            if (this.value) {
+                clearSearch.style.display = 'block';
+                showSuggestions();
+            } else {
+                clearSearch.style.display = 'none';
+                suggestions.style.display = 'none';
+            }
+            applyFilters();
+        });
+        
+       
+        clearSearch.addEventListener('click', function() {
+            searchInput.value = '';
+            clearSearch.style.display = 'none';
+            suggestions.style.display = 'none';
+            applyFilters();
+        });
+        
+        
+        experienceRange.addEventListener('input', function() {
+            maxExperience = parseInt(this.value);
+            experienceValue.textContent = `0 - ${maxExperience}`;
+            applyFilters();
+        });
+        
+        
+        feeRange.addEventListener('input', function() {
+            maxFee = parseInt(this.value);
+            feeValue.textContent = `$${maxFee}`;
+            applyFilters();
+        });
+        
+      
+        sortSelect.addEventListener('change', function() {
+            currentSort = this.value;
+            applyFilters();
+        });
+        
+       
+        document.querySelectorAll('.specialization-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    selectedSpecializations.push(this.value);
+                } else {
+                    selectedSpecializations = selectedSpecializations.filter(spec => spec !== this.value);
+                }
+                applyFilters();
+            });
+        });
+        
+       
+        resetFilters.addEventListener('click', resetAllFilters);
+        resetFiltersNoResults.addEventListener('click', resetAllFilters);
+        
+        // View toggle
+        gridViewBtn.addEventListener('click', function() {
+            currentView = 'grid';
+            doctorsGrid.style.display = 'flex';
+            doctorsList.style.display = 'none';
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+        });
+        
+        listViewBtn.addEventListener('click', function() {
+            currentView = 'list';
+            doctorsGrid.style.display = 'none';
+            doctorsList.style.display = 'block';
+            gridViewBtn.classList.remove('active');
+            listViewBtn.classList.add('active');
+        });
+        
+       
+        function showSuggestions() {
+            const query = searchInput.value.toLowerCase();
+            if (!query) {
+                suggestions.style.display = 'none';
+                return;
+            }
+            
+            let matches = [];
+            doctorItems.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                const specialization = item.getAttribute('data-specialization').toLowerCase();
+                const experience = item.getAttribute('data-experience');
+                
+                if (name.includes(query) || specialization.includes(query) || experience.includes(query)) {
+                    matches.push({
+                        text: `Dr. ${item.getAttribute('data-name')} - ${item.getAttribute('data-specialization')}`,
+                        value: item.getAttribute('data-name')
+                    });
+                }
+            });
+            
+            if (matches.length > 0) {
+                suggestions.innerHTML = '';
+                matches.slice(0, 5).forEach(match => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.textContent = match.text;
+                    div.addEventListener('click', function() {
+                        searchInput.value = match.value;
+                        suggestions.style.display = 'none';
+                        clearSearch.style.display = 'block';
+                        applyFilters();
+                    });
+                    suggestions.appendChild(div);
+                });
+                suggestions.style.display = 'block';
+            } else {
+                suggestions.style.display = 'none';
+            }
+        }
+        
+        
+        function applyFilters() {
+            const searchQuery = searchInput.value.toLowerCase();
+            let visibleCount = 0;
+            
+           
+            doctorItems.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                const specialization = item.getAttribute('data-specialization').toLowerCase();
+                const experience = parseInt(item.getAttribute('data-experience'));
+                const fee = parseInt(item.getAttribute('data-fee'));
+                
+              
+                const matchesSearch = !searchQuery || 
+                                     name.includes(searchQuery) || 
+                                     specialization.includes(searchQuery) || 
+                                     experience.toString().includes(searchQuery);
+                
+                const matchesSpecialization = selectedSpecializations.length === 0 || 
+                                             selectedSpecializations.includes(item.getAttribute('data-specialization'));
+                
+                const matchesExperience = experience <= maxExperience;
+                const matchesFee = fee <= maxFee;
+                
+               
+                if (matchesSearch && matchesSpecialization && matchesExperience && matchesFee) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+           
+            if (currentSort !== 'default') {
+                const gridItems = Array.from(doctorsGrid.querySelectorAll('.doctor-item[style=""]'));
+                const listItems = Array.from(doctorsList.querySelectorAll('.doctor-item[style=""]'));
+                
+              
+                const sortFunction = (a, b) => {
+                    if (currentSort === 'fee-low-high') {
+                        return parseInt(a.getAttribute('data-fee')) - parseInt(b.getAttribute('data-fee'));
+                    } else if (currentSort === 'fee-high-low') {
+                        return parseInt(b.getAttribute('data-fee')) - parseInt(a.getAttribute('data-fee'));
+                    } else if (currentSort === 'experience-high-low') {
+                        return parseInt(b.getAttribute('data-experience')) - parseInt(a.getAttribute('data-experience'));
+                    } else if (currentSort === 'name-a-z') {
+                        return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
+                    }
+                    return 0;
+                };
+                
+               
+                gridItems.sort(sortFunction).forEach(item => {
+                    doctorsGrid.appendChild(item);
+                });
+                
+                listItems.sort(sortFunction).forEach(item => {
+                    doctorsList.appendChild(item);
+                });
+            }
+            
+           
+            if (visibleCount === doctorItems.length) {
+                resultsCount.textContent = `Showing all doctors`;
+            } else {
+                resultsCount.textContent = `Showing ${visibleCount} of ${doctorItems.length} doctors`;
+            }
+            
+            
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+                doctorsGrid.style.display = 'none';
+                doctorsList.style.display = 'none';
+            } else {
+                noResults.style.display = 'none';
+                if (currentView === 'grid') {
+                    doctorsGrid.style.display = 'flex';
+                    doctorsList.style.display = 'none';
+                } else {
+                    doctorsGrid.style.display = 'none';
+                    doctorsList.style.display = 'block';
+                }
+            }
+        }
+        
+        
+        function resetAllFilters() {
+            searchInput.value = '';
+            clearSearch.style.display = 'none';
+            
+            experienceRange.value = 50;
+            maxExperience = 50;
+            experienceValue.textContent = '0 - 50';
+            
+            feeRange.value = 1000;
+            maxFee = 1000;
+            feeValue.textContent = '$1000';
+            
+            sortSelect.value = 'default';
+            currentSort = 'default';
+            
+            document.querySelectorAll('.specialization-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectedSpecializations = [];
+            
+            applyFilters();
+        }
+        
+        
+        applyFilters();
+    });
+</script>
+{% endblock %}

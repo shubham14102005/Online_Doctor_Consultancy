@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block title %}Patient Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Patient Details</h2>
+    <div class="card bg-dark text-light">
+        <div class="card-body">
+            <h4 class="card-title">Patient: {{ patient.user.first_name }} {{ patient.user.last_name }}</h4>
+            <p><strong>Email:</strong> {{ patient.user.email }}</p>
+            <p><strong>Contact Info:</strong> {{ patient.contact_info }}</p>
+            <p><strong>Gender:</strong> {{ patient.get_gender_display }}</p>
+            <p><strong>Age:</strong> {{ patient.age }}</p>
+            <p><strong>Medical History:</strong></p>
+            <p>{{ patient.medical_history|default:"No medical history available." }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

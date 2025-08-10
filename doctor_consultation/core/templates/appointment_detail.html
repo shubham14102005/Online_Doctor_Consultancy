@@ -1,0 +1,53 @@
+ {% extends "Layout.html" %}
+
+{% block title %} Appointment Details {% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Appointment Details</h2>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            Appointment #{{ appointment.appointment_id }}
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Dr. {{ appointment.doctor.user.first_name }} ({{ appointment.doctor.specialization }})</h5>
+            <p class="card-text"><strong>Patient:</strong> {{ appointment.patient.user.first_name }}</p>
+            <p class="card-text"><strong>Date:</strong> {{ appointment.date }}</p>
+            <p class="card-text"><strong>Time:</strong> {{ appointment.time }}</p>
+            <p class="card-text"><strong>Status:</strong> 
+                <span class="badge {% if appointment.status == 'Confirmed' %}bg-success{% elif appointment.status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                    {{ appointment.get_status_display }}
+                </span>
+            </p>
+
+            {% if request.user == appointment.doctor.user %}
+                {% if not appointment.is_confirmed %}
+                    <a href="{% url 'confirm_appointment' appointment.appointment_id %}" class="btn btn-success">Confirm Appointment</a>
+                {% endif %}
+                <a href="{% url 'prescription_create' appointment.appointment_id %}" class="btn btn-primary">Add Prescription</a>
+            {% endif %}
+
+            {% if request.user == appointment.patient.user %}
+                {% comment %} {% if appointment.prescription %} {% endcomment %}
+    <div class="alert alert-info mt-3">
+        <h5>Prescription:</h5>
+        <p><strong>Medications:</strong> {{ appointment.prescription.medications }}</p>
+        <p><strong>Notes:</strong> {{ appointment.prescription.notes }}</p>
+        {#  <a href="{% url 'prescription_list' %}" class="btn btn-info">View Prescription</a>  #}
+    </div>
+{% comment %} {% else %}
+    <div class="alert alert-warning mt-3">
+        <p>No prescription available yet.</p>
+    </div>
+{% endif %} {% endcomment %}
+
+            {% endif %}
+        </div>
+
+        <div class="card-footer">
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

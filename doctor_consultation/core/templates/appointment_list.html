@@ -1,0 +1,35 @@
+
+{% extends "Layout.html" %}
+{% block title %}Appointments{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Appointments</h2>
+    <table class="table table-dark table-hover">
+        <thead>
+            <tr>
+                <th>Doctor</th>
+                <th>Patient</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appointment in appointments %}
+            <tr>
+                <td>{{ appointment.doctor.user.first_name }}</td>
+                <td>{{ appointment.patient.user.first_name }}</td>
+                <td>{{ appointment.date }}</td>
+                <td>{{ appointment.time }}</td>
+                <td>{{ appointment.status }}</td>
+                <td>
+                    <a href="{% url 'appointment_detail' appointment.appointment_id %}" class="btn btn-info btn-sm">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

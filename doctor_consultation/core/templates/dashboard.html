@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Dashboard
+{% endblock %}
+
+{% block content %}
+    <h1>Welcome to Online Doctor Consultation</h1>
+    
+    {% if user.is_authenticated %}
+        <p>Hello, {{ user.username }}! You are logged in as a <strong>{{ user.user_type }}</strong>.</p>
+        
+        {% if user.user_type == 'doctor' %}
+            <a href="{% url 'doctor_dashboard' %}" class="btn btn-primary">Go to Doctor Dashboard</a>
+        {% elif user.user_type == 'patient' %}
+            <a href="{% url 'patient_dashboard' %}" class="btn btn-primary">Go to Patient Dashboard</a>
+        {% endif %}
+
+        <a href="{% url 'logout' %}" method="post" class="btn btn-danger">Logout</a>
+    
+    {% else %}
+        <p>Please log in or register to continue.</p>
+        <a href="{% url 'login' %}" class="btn btn-success">Login</a>
+        <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+    {% endif %}
+
+{% endblock %}
